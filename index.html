@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Apenas um site</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+     margin: 0;
+     height: 100vh;
+     display: flex;
+     flex-direction: column;
+     justify-content: center;
+     align-items: center;
+     font-family: Arial, sans-serif;
+     background-image: url('banner.jpg');
+     background-size: cover;
+     background-position: center;
+     background-repeat: no-repeat;
+     overflow: hidden;
+     padding: 20px;
+    }
+
+
+    h1 {
+      margin-bottom: 30px;
+      color: #e29455;
+      text-align: center;
+      font-size: 6vw;
+    }
+
+    .btn {
+      padding: 12px 20px;
+      margin: 10px;
+      font-size: 4vw;
+      border: none;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: background 0.3s;
+      max-width: 90vw;
+    }
+
+    .btn-normal {
+      background-color: #000000;
+      color: #e29455;
+    }
+
+    .btn-normal:hover {
+      background-color: #b9292900;
+    }
+
+    .btn-fugitivo {
+      position: absolute;
+      background-color: #000000;
+      color: #e29455;
+    }
+
+    .heart {
+      position: absolute;
+      font-size: 30px;
+      color: #e29455;
+      opacity: 0;
+      animation: subir 2.5s ease-out forwards;
+      pointer-events: none;
+    }
+
+    @keyframes subir {
+      0% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(-300px) scale(1.5);
+        opacity: 0;
+      }
+    }
+
+    @keyframes shake {
+      0% { transform: translate(0, 0); }
+      25% { transform: translate(-5px, 5px); }
+      50% { transform: translate(5px, -5px); }
+      75% { transform: translate(-5px, 5px); }
+      100% { transform: translate(0, 0); }
+    }
+
+    @keyframes fadeInOut {
+      0% { opacity: 0; transform: scale(0.8) translate(-50%, -50%); }
+      10% { opacity: 1; transform: scale(1) translate(-50%, -50%); }
+      90% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    @media (min-width: 768px) {
+      h1 {
+        font-size: 32px;
+      }
+
+      .btn {
+        font-size: 18px;
+        padding: 15px 25px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>você quer namorar comigo?</h1>
+
+  <button class="btn btn-normal" onclick="chuvaDeCoracoes()">Sim :)</button>
+  <button class="btn btn-fugitivo" id="fugitivo" onclick="rejeicao()">Não :(</button>
+
+  <audio id="beijo-som" src="beijo.mp3" preload="auto"></audio>
+
+  <script>
+    const btn = document.getElementById('fugitivo');
+
+    btn.style.left = "50%";
+    btn.style.top = "70%";
+    btn.style.transform = "translate(-50%, -50%)";
+
+    document.addEventListener('mousemove', function(e) {
+      const mouseX = e.clientX;
+      const mouseY = e.clientY;
+      const btnRect = btn.getBoundingClientRect();
+
+      const btnX = btnRect.left + btnRect.width / 2;
+      const btnY = btnRect.top + btnRect.height / 2;
+
+      const distX = mouseX - btnX;
+      const distY = mouseY - btnY;
+      const distance = Math.sqrt(distX ** 2 + distY ** 2);
+
+      const maxDistance = 100;
+
+      if (distance < maxDistance) {
+        const moveX = (distX / distance) * 80;
+        const moveY = (distY / distance) * 80;
+
+        let newLeft = btn.offsetLeft - moveX;
+        let newTop = btn.offsetTop - moveY;
+
+        const maxX = window.innerWidth - btn.offsetWidth;
+        const maxY = window.innerHeight - btn.offsetHeight;
+
+        newLeft = Math.min(Math.max(0, newLeft), maxX);
+        newTop = Math.min(Math.max(0, newTop), maxY);
+
+        btn.style.left = newLeft + 'px';
+        btn.style.top = newTop + 'px';
+      }
+    });
+
+    function chuvaDeCoracoes() {
+      const audio = document.getElementById('beijo-som');
+      audio.currentTime = 0;
+      audio.play();
+
+      const quantidade = 45;
+
+      for (let i = 0; i < quantidade; i++) {
+        setTimeout(() => {
+          const heart = document.createElement('div');
+          heart.classList.add('heart');
+          heart.innerHTML = '🤎';
+
+          const size = Math.random() * 60 + 90;
+          heart.style.fontSize = `${size}px`;
+
+          const x = Math.random() * window.innerWidth;
+          const y = Math.random() * (window.innerHeight / 2) + window.innerHeight / 2;
+          heart.style.left = `${x}px`;
+          heart.style.top = `${y}px`;
+
+          heart.style.animationDuration = (Math.random() * 0.8 + 1.2) + "s";
+
+          document.body.appendChild(heart);
+
+          setTimeout(() => heart.remove(), 2000);
+        }, i * 40);
+      }
+
+      setTimeout(() => {
+        window.open('https://www.instagram.com/lazaromachadod/', '_blank');
+      }, 1000);
+    }
+
+    function rejeicao() {
+      const msg = document.createElement('div');
+      msg.innerText = 'Essa não é uma opção 😠';
+      msg.style.position = 'fixed';
+      msg.style.top = '50%';
+      msg.style.left = '50%';
+      msg.style.transform = 'translate(-50%, -50%)';
+      msg.style.fontSize = '5vw';
+      msg.style.background = '#000000cc';
+      msg.style.color = 'white';
+      msg.style.padding = '30px 50px';
+      msg.style.borderRadius = '15px';
+      msg.style.zIndex = '9999';
+      msg.style.animation = 'fadeInOut 2s ease forwards';
+      document.body.appendChild(msg);
+
+      document.body.style.animation = 'shake 0.3s';
+
+      setTimeout(() => {
+        window.location.href = window.location.href;
+      }, 2000);
+    }
+  </script>
+</body>
+</html>
