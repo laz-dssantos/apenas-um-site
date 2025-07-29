@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Apenas um site</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      overflow: hidden;
+      padding: 20px;
+    }
+
+    h1 {
+      margin-bottom: 30px;
+      color: #000000;
+      text-align: center;
+      font-size: 6vw;
+    }
+
+    .btn {
+      padding: 12px 20px;
+      margin: 10px;
+      font-size: 4vw;
+      border: none;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: background 0.3s;
+      max-width: 90vw;
+    }
+
+    .btn-normal {
+      background-color: #000000;
+      color: white;
+    }
+
+    .btn-normal:hover {
+      background-color: #b92929;
+    }
+
+    .btn-fugitivo {
+      position: absolute;
+      background-color: #000000;
+      color: white;
+    }
+
+    .heart {
+      position: absolute;
+      font-size: 30px;
+      color: #e25555;
+      opacity: 0;
+      animation: subir 1.5s ease-out forwards;
+      pointer-events: none;
+    }
+
+    @keyframes subir {
+      0% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(-300px) scale(1.5);
+        opacity: 0;
+      }
+    }
+
+    @media (min-width: 768px) {
+      h1 {
+        font-size: 32px;
+      }
+
+      .btn {
+        font-size: 18px;
+        padding: 15px 25px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>você quer namorar comigo?</h1>
+
+  <button class="btn btn-normal" onclick="chuvaDeCoracoes()">Sim :)</button>
+
+  <button class="btn btn-fugitivo" id="fugitivo">Não :(</button>
+
+  <script>
+    const btn = document.getElementById('fugitivo');
+
+    btn.style.left = "50%";
+    btn.style.top = "70%";
+    btn.style.transform = "translate(-50%, -50%)";
+
+    document.addEventListener('mousemove', function(e) {
+      const mouseX = e.clientX;
+      const mouseY = e.clientY;
+      const btnRect = btn.getBoundingClientRect();
+
+      const btnX = btnRect.left + btnRect.width / 2;
+      const btnY = btnRect.top + btnRect.height / 2;
+
+      const distX = mouseX - btnX;
+      const distY = mouseY - btnY;
+      const distance = Math.sqrt(distX ** 2 + distY ** 2);
+
+      const maxDistance = 100;
+
+      if (distance < maxDistance) {
+        const moveX = (distX / distance) * 80;
+        const moveY = (distY / distance) * 80;
+
+        let newLeft = btn.offsetLeft - moveX;
+        let newTop = btn.offsetTop - moveY;
+
+        const maxX = window.innerWidth - btn.offsetWidth;
+        const maxY = window.innerHeight - btn.offsetHeight;
+
+        newLeft = Math.min(Math.max(0, newLeft), maxX);
+        newTop = Math.min(Math.max(0, newTop), maxY);
+
+        btn.style.left = newLeft + 'px';
+        btn.style.top = newTop + 'px';
+      }
+    });
+
+    function chuvaDeCoracoes() {
+      const quantidade = 25;
+
+      for (let i = 0; i < quantidade; i++) {
+        setTimeout(() => {
+          const heart = document.createElement('div');
+          heart.classList.add('heart');
+          heart.innerHTML = '❤️';
+
+          const size = Math.random() * 40 + 60;
+          heart.style.fontSize = `${size}px`;
+
+          const x = Math.random() * window.innerWidth;
+          const y = Math.random() * (window.innerHeight / 2) + window.innerHeight / 2;
+          heart.style.left = `${x}px`;
+          heart.style.top = `${y}px`;
+
+          heart.style.animationDuration = (Math.random() * 0.8 + 1.2) + "s";
+
+          document.body.appendChild(heart);
+
+          setTimeout(() => heart.remove(), 2000);
+        }, i * 40);
+      }
+
+      setTimeout(() => {
+        window.open('https://www.instagram.com/lazaromachadod/', '_blank');
+      }, 1000);
+    }
+  </script>
+</body>
+</html>
