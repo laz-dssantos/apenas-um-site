@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Termo Completo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="preload" href="palavras.json" as="fetch" type="application/json" crossorigin="anonymous">
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #fafafa;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      margin: 0;
+    }
+
+    h1 { color: #333; margin-bottom: 10px; }
+
+    #grid {
+      display: grid;
+      grid-template-columns: repeat(5, 60px);
+      gap: 6px;
+      margin: 20px 0;
+    }
+
+    .cell {
+      width: 60px;
+      height: 60px;
+      border: 2px solid #ccc;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 24px;
+      font-weight: bold;
+      text-transform: uppercase;
+      background-color: white;
+      animation: pop 0.2s ease;
+      transition: background-color 0.3s ease;
+    }
+
+    .green { background-color: #047400; color: white; }
+    .yellow { background-color: #ffd000; color: white; }
+    .gray { background-color: #787c7e; color: white; }
+
+    @keyframes pop {
+      0% { transform: scale(0.8); }
+      100% { transform: scale(1); }
+    }
+
+    #keyboard {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      max-width: 340px;
+      gap: 5px;
+    }
+
+    .key {
+      padding: 12px;
+      width: 30px;
+      background: #ddd;
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .key.wide { width: 60px; }
+
+    .key:hover { background: #bbb; }
+
+    #message {
+      margin-top: 15px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    #stats {
+      font-size: 14px;
+      margin-top: 10px;
+      color: #555;
+    }
+
+    @media (max-width: 500px) {
+      #grid {
+        grid-template-columns: repeat(5, 50px);
+      }
+
+      .cell {
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+      }
+
+      .key {
+        padding: 10px;
+        width: 28px;
+        font-size: 14px;
+      }
+
+      .key.wide {
+        width: 55px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Termo 🎯</h1>
+  <div id="grid"></div>
+  <div id="keyboard"></div>
+  <div id="message"></div>
+  <div id="stats"></div>
+
+  <audio id="click" src="click.mp3"></audio>
+  <audio id="win" src="win.mp3"></audio>
+  <audio id="fail" src="fail.mp3"></audio>
+
+  <script>
+    let palavras = [];
+    let resposta = "";
+    let tentativa = 0;
+    let linhaAtual = [];
+    const maxTentativas = 6;
+
+    const grid = document.getElementById("grid");
+    const keyboard = document.getElementById("keyboard");
+    const message = document.getElementById("message");
+    const stats = document.getElementById("stats");
+
+    const sons = {
+      click: document.getElementById("click"),
+      win: document.getElementById("win"),
+      fail: document.getElementById("fail")
+    };
+
+    const layout = [
+      [..."QWERTYUIOP"],
+      [..."ASDFGHJKL"],
+      ["Enter", ..."ZXCVBNM", "←"]
+    ];
+
+    function tocar(nome) {
+      sons[nome]?.currentTime = 0;
+      sons[nome]?.play();
+    }
+
+    function carregarPalavras() {
+      fetch("palavras.json")
+        .then(r => r.json())
+        .then(lista => {
+          palavras = lista.filter(p => p.length === 5);
+          resposta = palavras[Math.floor(Math.random() * palavras.length)];
+        });
+    }
+
+    function desenharTeclado() {
+      layout.forEach(linha => {
+        linha.forEach(letra => {
+          const btn = document.createElement("button");
+          btn.textContent = letra;
+          btn.classList.add("key");
+          if (letra === "Enter" || letra === "←") btn.classList.add("wide");
+          btn.addEventListener("click", () => pressionarTecla(letra));
+          keyboard.appendChild(btn);
+        });
+      });
+    }
+
+    function pressionarTecla(tecla) {
+      if (tentativa >= maxTentativas) return;
+
+      tocar("click");
+
+      if (tecla === "←") {
+        if (linhaAtual.length > 0) {
+          linhaAtual.pop();
+          grid.removeChild(grid.lastChild);
+        }
+        return;
+      }
+
+      if (tecla === "Enter") {
+        if (linhaAtual.length < 5) return;
+        const palpite = linhaAtual.join("").toLowerCase();
+        if (!palavras.includes(palpite)) {
+          message.textContent = "❌ Palavra inválida!";
+          return;
+        }
+        verificarPalpite(palpite);
+        return;
+      }
+
+      if (linhaAtual.length >= 5) return;
+
+      const cell = document.createElement("div");
+      cell.className = "cell";
+      cell.textContent = tecla;
+      grid.appendChild(cell);
+      linhaAtual.push(tecla);
+    }
+
+    function verificarPalpite(palpite) {
+      const letrasResposta = resposta.split("");
+      for (let i = 0; i < 5; i++) {
+        const index = tentativa * 5 + i;
+        const cell = grid.children[index];
+        const letra = palpite[i];
+
+        if (resposta[i] === letra) {
+          cell.classList.add("green");
+        } else if (letrasResposta.includes(letra)) {
+          cell.classList.add("yellow");
+        } else {
+          cell.classList.add("gray");
+        }
+      }
+
+      tentativa++;
+      linhaAtual = [];
+
+      if (palpite === resposta) {
+        message.textContent = "🎉 Você venceu!";
+        tocar("win");
+        salvarResultado(true);
+        return;
+      }
+
+      if (tentativa === maxTentativas) {
+        message.textContent = `💥 A palavra era: ${resposta.toUpperCase()}`;
+        tocar("fail");
+        salvarResultado(false);
+      }
+    }
+
+    function salvarResultado(vitoria) {
+      const stats = JSON.parse(localStorage.getItem("statsTermo") || '{"v":0,"d":0}');
+      if (vitoria) stats.v++;
+      else stats.d++;
+      localStorage.setItem("statsTermo", JSON.stringify(stats));
+      mostrarEstatisticas();
+    }
+
+    function mostrarEstatisticas() {
+      const statsData = JSON.parse(localStorage.getItem("statsTermo") || '{"v":0,"d":0}');
+      stats.innerHTML = `✅ Vitórias: ${statsData.v} &nbsp;&nbsp; ❌ Derrotas: ${statsData.d}`;
+    }
+
+    carregarPalavras();
+    desenharTeclado();
+    mostrarEstatisticas();
+  </script>
+
+</body>
+</html>
