@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>apenas um site</title>
+  <style>
+       
+      html, body {
+  height: 100vh;
+  overflow-y: hidden;
+}
+
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Arial', sans-serif;
+      background-image: url('banner.jpg');
+      background-size: cover;
+      background-position: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+      padding: 20px;
+    }
+
+    .top-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      gap: 20px;
+      text-align: center;
+      position: relative;
+    }
+
+    .btn-titulo {
+      font-size: clamp(20px, 5vw, 50px);
+      padding: 25px 50px;
+      border-radius: 25px;
+      background: linear-gradient(to right, #ffe0c7, #f5a97f);
+      color: #6b3200;
+      font-weight: bold;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+      border: none;
+    }
+
+    .botoes {
+      display: flex;
+      gap: 20px;
+    }
+
+    .btn {
+      padding: 15px 30px;
+      font-size: 1.2rem;
+      border-radius: 20px;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      transition: 0.3s;
+      position: relative;
+    }
+
+    .btn-normal, .btn-fugitivo {
+      background: linear-gradient(to right, #ffe0c7, #f5a97f);
+      color: #6b3200;
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn:hover {
+      transform: scale(1.05);
+    }
+
+    .shake {
+      animation: shake 0.3s infinite;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translate(0, 0); }
+      25% { transform: translate(-5px, 5px); }
+      50% { transform: translate(5px, -5px); }
+      75% { transform: translate(-5px, 5px); }
+    }
+
+
+.heart, .flor {
+  position: fixed;
+  pointer-events: none;
+  user-select: none;
+  will-change: transform, opacity;
+}
+
+.heart, .flor {
+  animation: cair 3s linear forwards;
+  opacity: 0.8;
+}
+
+@keyframes cair {
+  0% { transform: translateY(0) rotate(0deg); opacity: 0.8; }
+  100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
+}
+
+
+    .termo-container {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(5, 50px);
+      gap: 5px;
+      margin: 10px 0;
+    }
+
+    .cell {
+      width: 50px;
+      height: 50px;
+      font-size: 24px;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid #aaa;
+      background-color: white;
+      user-select: none;
+    }
+
+    .keyboard {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 5px;
+      max-width: 500px;
+      margin: 10px auto;
+    }
+
+    .key {
+      padding: 10px;
+      background: #eee;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      cursor: pointer;
+      text-transform: uppercase;
+      user-select: none;
+    }
+
+    .key:active {
+      background: #ccc;
+    }
+
+    @media (max-width: 600px) {
+      .grid { grid-template-columns: repeat(5, 40px); }
+      .cell { width: 40px; height: 40px; font-size: 20px; }
+      .keyboard { grid-template-columns: repeat(7, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <div class="top-container" id="amor-container">
+    <button class="btn-titulo">Você quer namorar comigo?</button>
+    <div class="botoes">
+      <button class="btn btn-normal" onclick="abrirInstagram()">Sim :)</button>
+      <button class="btn btn-fugitivo" id="fugitivo" onclick="mostrarTermo()">Não :(</button>
+    </div>
+  </div>
+
+  <div class="termo-container" id="termo">
+    <h2>se você ganhar pode negar meu amor</h2>
+    <div class="grid" id="grid"></div>
+    <div class="keyboard" id="keyboard"></div>
+  </div>
+
+  <script>
+    // Variáveis do jogo
+    let palavraSecreta = '';
+    const tamanhoPalavra = 5;
+    let tentativa = '';
+    let linhaAtual = 0;
+    const maxLinhas = 6;
+    let termoAtivo = false;
+
+    const grid = document.getElementById('grid');
+    const keyboard = document.getElementById('keyboard');
+    const btnFugitivo = document.getElementById('fugitivo');
+
+
+
+function chuvaDeFloresECoracoes() {
+  const container = document.body;
+  const tipos = ['heart', 'flor'];
+
+  for (let i = 30; i < 60; i++) {
+    const tipo = tipos[Math.floor(Math.random() * tipos.length)];
+    const elem = document.createElement('div');
+    elem.classList.add(tipo);
+
+    // posição horizontal aleatória dentro da tela (ajustado para não sair da tela)
+    const size = 50 + Math.random() * 70;
+    const maxLeft = window.innerWidth - size;
+    elem.style.left = Math.random() * maxLeft + 'px';
+
+    // posição vertical inicial acima da tela (pra cair)
+    elem.style.top = (-100 - Math.random() * 100) + 'px';
+
+    elem.style.fontSize = size + 'px';
+    elem.style.opacity = 5.5 + Math.random() * 6.7;
+
+    // rotação inicial aleatória
+    const rotate = Math.random() * 360;
+    elem.style.transform = `rotate(${rotate}deg)`;
+
+    // escolher emoji conforme tipo
+    elem.textContent = tipo === 'heart' ? '🤎' : '🌻';
+
+    // duração e delay aleatórios pra variar a queda
+    elem.style.animationDuration = (3 + Math.random() * 2) + 's';
+    elem.style.animationDelay = (Math.random() * 2) + 's';
+
+    elem.style.animationName = 'cair';
+
+    container.appendChild(elem);
+
+    // Remove quando acabar a animação pra não acumular no DOM
+    elem.addEventListener('animationend', () => elem.remove());
+  }
+}
+
+
+
+// Atualizar a função do botão SIM para chamar chuva de flores e corações e abrir Instagram
+function abrirInstagram() {
+  chuvaDeFloresECoracoes();
+  setTimeout(() => {
+    window.open('https://www.instagram.com/lazaromachadod/', '_blank');
+  }, 3000); // abre o insta com delay pra animação aparecer
+}
+
+
+    // Botão NÃO fugitivo
+    document.addEventListener('mousemove', e => {
+      if (termoAtivo) return;
+
+      const mouseX = e.clientX;
+      const mouseY = e.clientY;
+      const btnRect = btnFugitivo.getBoundingClientRect();
+      const btnX = btnRect.left + btnRect.width / 2;
+      const btnY = btnRect.top + btnRect.height / 2;
+      const dist = Math.hypot(mouseX - btnX, mouseY - btnY);
+
+      if (dist < 100) {
+        let moveX = btnFugitivo.offsetLeft - (mouseX - btnX) * 0.6;
+        let moveY = btnFugitivo.offsetTop - (mouseY - btnY) * 0.6;
+
+        // Limitar dentro da tela
+        moveX = Math.min(window.innerWidth - btnFugitivo.offsetWidth, Math.max(0, moveX));
+        moveY = Math.min(window.innerHeight - btnFugitivo.offsetHeight, Math.max(0, moveY));
+
+        btnFugitivo.style.position = 'absolute';
+        btnFugitivo.style.left = moveX + 'px';
+        btnFugitivo.style.top = moveY + 'px';
+        btnFugitivo.classList.add('shake');
+      } else {
+        btnFugitivo.classList.remove('shake');
+      }
+    });
+
+    // Mostrar Termo
+    function mostrarTermo() {
+      termoAtivo = true;
+      document.getElementById('amor-container').style.display = 'none';
+      document.getElementById('termo').style.display = 'flex';
+      carregarPalavras();
+    }
+
+    // Iniciar o jogo Termo
+    function iniciarTermo() {
+      tentativa = '';
+      linhaAtual = 0;
+
+      grid.innerHTML = '';
+      keyboard.innerHTML = '';
+
+      // Criar grid 6x5
+      for (let i = 0; i < maxLinhas * tamanhoPalavra; i++) {
+        const cell = document.createElement('div');
+        cell.className = 'cell';
+        cell.textContent = '';
+        cell.style.backgroundColor = 'white';
+        grid.appendChild(cell);
+      }
+
+      // Criar teclado
+      const letras = 'QWERTYUIOPASDFGHJKLZXCVBNM'.split('');
+      letras.forEach(l => {
+        const key = document.createElement('button');
+        key.className = 'key';
+        key.textContent = l;
+        key.onclick = () => pressionarLetra(l);
+        keyboard.appendChild(key);
+      });
+
+      // Enter
+      const enter = document.createElement('button');
+      enter.className = 'key';
+      enter.textContent = '↵';
+      enter.onclick = verificarTentativa;
+      keyboard.appendChild(enter);
+
+      // Backspace
+      const back = document.createElement('button');
+      back.className = 'key';
+      back.textContent = '⌫';
+      back.onclick = () => {
+        tentativa = tentativa.slice(0, -1);
+        atualizarGrid();
+      };
+      keyboard.appendChild(back);
+
+      atualizarGrid();
+    }
+
+    function pressionarLetra(letra) {
+      if (tentativa.length < tamanhoPalavra) {
+        tentativa += letra;
+        atualizarGrid();
+      }
+    }
+
+    function atualizarGrid() {
+      const cells = grid.querySelectorAll('.cell');
+      for (let i = 0; i < tamanhoPalavra; i++) {
+        cells[linhaAtual * tamanhoPalavra + i].textContent = tentativa[i] || '';
+      }
+    }
+function verificarTentativa() {
+  if (tentativa.length !== tamanhoPalavra) return;
+
+  const cells = grid.querySelectorAll('.cell');
+
+  for (let i = 0; i < tamanhoPalavra; i++) {
+    const letra = tentativa[i];
+    const cell = cells[linhaAtual * tamanhoPalavra + i];
+
+    if (letra === palavraSecreta[i]) {
+      cell.style.backgroundColor = '#7cc674'; // verde
+    } else if (palavraSecreta.includes(letra)) {
+      cell.style.backgroundColor = '#e3e374'; // amarelo
+    } else {
+      cell.style.backgroundColor = '#ccc'; // cinza
+    }
+  }
+
+  if (tentativa === palavraSecreta) {
+    setTimeout(() => mostrarVitoria(), 100);
+  } else if (++linhaAtual === maxLinhas) {
+    setTimeout(() => mostrarDerrota(), 100);
+  }
+
+  tentativa = '';
+  atualizarGrid();
+}
+
+function mostrarVitoria() {
+  termoAtivo = false;
+  document.getElementById('termo').style.display = 'none';
+
+  let container = document.getElementById('resultado-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'resultado-container';
+    container.style.textAlign = 'center';
+    container.style.marginTop = '20px';
+    document.body.appendChild(container);
+  }
+  container.innerHTML = '';
+
+  const msg = document.createElement('p');
+  msg.textContent = 'Parabéns, você venceu o Termo do Amor! Quer namorar comigo?';
+  msg.style.fontSize = '1.3rem';
+  container.appendChild(msg);
+
+  const btnSim = document.createElement('button');
+  btnSim.textContent = 'Sim';
+  btnSim.style.margin = '10px';
+  btnSim.style.padding = '10px 20px';
+  btnSim.style.fontSize = '1rem';
+  btnSim.style.cursor = 'pointer';
+  btnSim.onclick = () => {
+    window.open('https://wa.me/555199370758', '_blank');
+  };
+  container.appendChild(btnSim);
+
+  const btnNao = document.createElement('button');
+  btnNao.textContent = 'Não';
+  btnNao.style.margin = '10px';
+  btnNao.style.padding = '10px 20px';
+  btnNao.style.fontSize = '1rem';
+  btnNao.style.cursor = 'pointer';
+  btnNao.onclick = () => {
+    window.open('https://wa.me/555199370758', '_blank');
+  };
+  container.appendChild(btnNao);
+}
+
+function mostrarDerrota() {
+  termoAtivo = false;
+  document.getElementById('termo').style.display = 'none';
+
+  let container = document.getElementById('resultado-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'resultado-container';
+    container.style.textAlign = 'center';
+    container.style.marginTop = '20px';
+    document.body.appendChild(container);
+  }
+  container.innerHTML = '';
+
+  const msg = document.createElement('p');
+  msg.innerHTML = `Acabaram as tentativas... você terá que aceitar o amor! 💘<br>
+    <a href="https://www.instagram.com/lazaromachadod/" target="_blank" style="color:#f57e7e; font-weight:bold;">manda mensagem lá</a>`;
+  msg.style.fontSize = '1.3rem';
+  container.appendChild(msg);
+}
+   
+
+    // Carregar lista de palavras do arquivo JSON
+    async function carregarPalavras() {
+      try {
+        const response = await fetch('palavras.json');
+        const lista = await response.json();
+        const palavrasFiltradas = lista.filter(p => p.length === tamanhoPalavra);
+        palavraSecreta = palavrasFiltradas[Math.floor(Math.random() * palavrasFiltradas.length)].toUpperCase();
+      } catch (e) {
+        console.error('Erro ao carregar palavras:', e);
+        palavraSecreta = 'AMORO';
+      }
+      iniciarTermo();
+    }
+  </script>
+</body>
+</html>
